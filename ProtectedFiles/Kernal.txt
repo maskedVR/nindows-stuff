@@ -1,0 +1,73 @@
+-- /ProtectedFiles/kernal.lua
+
+-- Function to clear the screen
+local function clearScreen()
+    term.setBackgroundColor(colors.black)
+    term.clear()
+    term.setTextColor(colors.white)
+end
+
+-- Function to center text on the screen
+local function centerText(text, y)
+    local screenWidth, _ = term.getSize()
+    local textLength = string.len(text)
+    -- Ensure text stays within bounds
+    if textLength > screenWidth then
+        text = string.sub(text, 1, screenWidth)
+    end
+    local x = math.ceil((screenWidth - textLength) / 2)
+    term.setCursorPos(x, y)
+    term.write(text)
+end
+
+-- Function to display a BSOD
+local function displayBSOD(errorMessage)
+    local screenWidth, screenHeight = term.getSize()
+
+    -- Draw BSOD background
+    term.setBackgroundColor(colors.blue)
+    term.clear()
+    term.setTextColor(colors.white)
+    
+    -- Center the BSOD text
+    centerText("A problem has been detected and Nindows has been shut down", math.ceil(screenHeight / 2) - 2)
+    centerText("to prevent damage to your computer.", math.ceil(screenHeight / 2) - 1)
+    centerText("", math.ceil(screenHeight / 2))
+    centerText("Error: " .. errorMessage, math.ceil(screenHeight / 2) + 1)
+    centerText("", math.ceil(screenHeight / 2) + 2)
+    centerText("Press any key to restart.", math.ceil(screenHeight / 2) + 4)
+
+    -- Wait for key press
+    os.pullEvent("key")
+    os.reboot()
+end
+
+-- Function to execute a script and handle errors globally
+local function executeScript(scriptPath)
+    local status, err = pcall(function()
+        shell.run(scriptPath)
+    end)
+    
+    if not status then
+        -- An error occurred in any script, display BSOD
+        displayBSOD(err)
+    end
+end
+
+-- Main function to manage script execution
+local function main()
+    parallel.waitForAny(
+        function() executeScript("/ProtectedFiles/desktop.txt") end,
+        function() executeScript("/ProtectedFiles/taskbar.txt") end,
+        function() 
+            -- Catch errors in any other scripts you run here
+            while true do
+                -- You can add additional scripts if needed
+                sleep(0.5)  -- Just keep checking for any task issues
+            end
+        end
+    )
+end
+
+-- Start the main function
+main()

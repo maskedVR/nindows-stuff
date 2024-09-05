@@ -1,0 +1,48 @@
+-- browser.lua
+
+-- Function to fetch a webpage using wget
+local function fetchPage(url)
+    local file = "/tmp/page.html"
+    local command = "wget -q -O " .. file .. " " .. url
+    os.execute(command)
+    
+    local fileHandle = io.open(file, "r")
+    if fileHandle then
+        local pageContent = fileHandle:read("*a")
+        fileHandle:close()
+        os.remove(file)  -- Clean up the temporary file
+        return pageContent
+    else
+        return "Error: Unable to fetch page"
+    end
+end
+
+-- Function to display the fetched page
+local function displayPage(pageContent)
+    term.clear()
+    term.setCursorPos(1, 1)
+    term.write(pageContent)
+end
+
+-- Main loop
+local function main()
+    while true do
+        term.clear()
+        term.setCursorPos(1, 1)
+        term.write("Enter URL (e.g., http://example.com): ")
+        
+        local url = read()
+        local pageContent = fetchPage(url)
+        displayPage(pageContent)
+
+        term.setCursorPos(1, 20)
+        term.write("Press 'q' to quit or any other key to fetch another page.")
+        
+        local input = read()
+        if input == "q" then
+            break
+        end
+    end
+end
+
+main()

@@ -1,0 +1,85 @@
+-- Define some basic colors
+local sidebarColor = colors.gray or 0x888888
+local chatBackgroundColor = colors.black or 0x000000
+local inputBackgroundColor = colors.gray or 0x888888
+local inputTextColor = colors.white or 0xFFFFFF
+
+-- Get screen dimensions
+local screenWidth, screenHeight = term.getSize()
+
+-- Check if dimensions are valid
+if not screenWidth or not screenHeight then
+    error("Failed to get screen size. Ensure the terminal is properly initialized.")
+end
+
+-- Function to draw the sidebar
+local function drawSidebar()
+    term.setBackgroundColor(sidebarColor)
+    term.setTextColor(colors.white or 0xFFFFFF)
+    term.setCursorPos(1, 1)
+    term.clearLine()
+    term.write("Servers")
+
+    -- Example servers
+    local servers = {"General", "Games", "Music", "Development"}
+    for i, server in ipairs(servers) do
+        term.setCursorPos(1, i + 1)
+        term.write(server)
+    end
+end
+
+-- Function to draw the chat area
+local function drawChatArea()
+    term.setBackgroundColor(chatBackgroundColor)
+    term.setTextColor(colors.white or 0xFFFFFF)
+    term.setCursorPos(10, 1)
+    term.clear()
+    term.write("Chat Area")
+end
+
+-- Function to draw the input area
+local function drawInputArea()
+    term.setBackgroundColor(inputBackgroundColor)
+    term.setTextColor(inputTextColor)
+    term.setCursorPos(10, screenHeight - 1)
+    term.write("> ")
+end
+
+-- Function to handle user input
+local function handleInput()
+    local input = ""
+    term.setCursorPos(10, screenHeight - 1)
+    term.write("> ")
+    while true do
+        local event, _, _, _, char = os.pullEvent()
+        if event == "char" then
+            if char == "\n" then
+                -- Handle message send (print to chat area for now)
+                term.setCursorPos(10, screenHeight - 1)
+                term.write("    ") -- Clear input
+                term.setCursorPos(10, screenHeight - 1)
+                term.write("> ")
+                term.setCursorPos(10, screenHeight - 2)
+                term.write(input)
+                input = ""
+            else
+                input = input .. char
+                term.setCursorPos(10 + #input, screenHeight - 1)
+                term.write(char)
+            end
+        elseif event == "key" then
+            -- Handle special keys if needed
+        end
+    end
+end
+
+-- Main function to set up the UI
+local function main()
+    term.clear()
+    drawSidebar()
+    drawChatArea()
+    drawInputArea()
+    handleInput()
+end
+
+main()

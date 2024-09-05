@@ -1,0 +1,35 @@
+-- /ProtectedFiles/taskbar.txt
+
+local screenWidth, screenHeight = term.getSize()
+local taskbarHeight = 1
+local taskbarBackgroundColor = colors.gray
+local taskbarTextColor = colors.black
+local startButtonWidth = 14
+local taskbarY = screenHeight  -- Always draw at the bottom
+
+-- Draw the taskbar without clearing the whole screen
+local function drawTaskbar()
+    local oldX, oldY = term.getCursorPos()  -- Save current cursor position
+    term.setCursorPos(1, taskbarY)
+    term.setBackgroundColor(taskbarBackgroundColor)
+    term.setTextColor(taskbarTextColor)
+    term.clearLine()
+    
+    -- Draw the "Start" button
+    term.setCursorPos(1, taskbarY)
+    term.write("Start")
+    
+    term.setCursorPos(oldX, oldY)  -- Restore cursor position
+end
+
+-- Main loop to keep the taskbar running without interfering
+while true do
+    drawTaskbar()
+    
+    -- Listen for mouse events but don't output anything
+    local event, button, x, y = os.pullEventRaw()
+    if event == "mouse_click" and y == taskbarY then
+        -- Handle taskbar interactions here (e.g., toggling Start menu)
+        -- This can be left empty if you don't want to do anything yet
+    end
+end

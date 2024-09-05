@@ -1,0 +1,122 @@
+-- desktop.lua
+
+-- Constants
+local screenWidth, screenHeight = term.getSize()
+local taskbarHeight = 1
+local taskbarBackgroundColor = colors.gray
+local taskbarTextColor = colors.black
+local startButtonWidth = 14
+local startButtonX = 1
+local startButtonY = screenHeight - taskbarHeight + 1
+local startMenuWidth = 25
+local startMenuHeight = 15  -- Height of the Start Menu
+local startMenuX = startButtonX
+local startMenuY = startButtonY - startMenuHeight
+local isStartMenuOpen = false
+
+-- Programs list
+local programs = {
+    { name = "Notepad", icon = "N", file = "/ProgramFilesX86/notepad.txt" },
+    { name = "Nindows Corner", icon = "B", file = "/ProgramFiles/web.txt" },
+    { name = "NGcord", icon = "C", file = "/ProgramFiles/ngcord.txt" }
+}
+
+-- Function to clear the screen
+local function clearScreen()
+    term.setBackgroundColor(colors.blue)  -- Set background color to blue
+    term.clear()
+    term.setTextColor(colors.white)
+end
+
+-- Function to center text on the screen
+local function centerText(text, y)
+    local textLength = string.len(text)
+    local x = math.ceil((screenWidth - textLength) / 2)
+    term.setCursorPos(x, y)
+    term.write(text)
+end
+
+-- Function to draw the taskbar
+local function drawTaskbar()
+    term.setBackgroundColor(taskbarBackgroundColor)
+    term.setTextColor(taskbarTextColor)
+    term.setCursorPos(1, screenHeight - taskbarHeight + 1)
+    term.clearLine()
+    
+    -- Draw start button
+    term.setBackgroundColor(colors.gray)
+    term.setTextColor(colors.black)
+    term.setCursorPos(startButtonX, startButtonY)
+    term.write("Start")
+end
+
+-- Function to draw the Start Menu
+local function drawStartMenu()
+    if not isStartMenuOpen then return end
+
+    term.setBackgroundColor(colors.lightGray)
+    term.setTextColor(colors.black)
+    term.setCursorPos(startMenuX, startMenuY)
+    
+    -- Draw menu background
+    for y = startMenuY, startMenuY + startMenuHeight - 1 do
+        term.setCursorPos(startMenuX, y)
+        term.write(string.rep(" ", startMenuWidth))
+    end
+
+    -- Draw menu items
+    local startY = startMenuY + 1
+    for i, program in ipairs(programs) do
+        term.setCursorPos(startMenuX + 1, startY + i - 1)
+        term.write("[" .. program.icon .. "] " .. program.name)
+    end
+    
+    -- Draw shutdown and restart options
+    term.setCursorPos(startMenuX + 1, startMenuY + startMenuHeight - 2)
+    term.write("[S] Shut down")
+    term.setCursorPos(startMenuX + 1, startMenuY + startMenuHeight - 1)
+    term.write("[R] Restart")
+end
+
+-- Function to handle mouse clicks
+local function handleMouseClick(x, y)
+    if isStartMenuOpen then
+        -- Check if the click is inside the start menu
+        if x >= startMenuX and x < startMenuX + startMenuWidth then
+            local programIndex = y - startMenuY
+            if programIndex >= 1 and programIndex <= #programs then
+                -- Run the selected program
+                local program = programs[programIndex]
+                if program then
+                    shell.run(program.file)
+                end
+            elseif y == startMenuY + startMenuHeight - 2 then
+                os.shutdown()
+            elseif y == startMenuY + startMenuHeight - 1 then
+                os.reboot()
+            else
+                -- Close the start menu if clicking outside
+                isStartMenuOpen = false
+            end
+        else
+            -- Close the start menu if clicking outside
+            isStartMenuOpen = false
+        end
+    else
+        if x >= startButtonX and x <= startButtonX + startButtonWidth - 1 and y == startButtonY then
+            isStartMenuOpen = not isStartMenuOpen
+        end
+    end
+end
+
+-- Main loop for the desktop
+while true do
+    clearScreen()
+    drawTaskbar()
+    drawStartMenu()
+    
+    local event, button, x, y = os.pullEvent("mouse_click")
+    if event == "mouse_click" then
+        handleMouseClick(x, y)
+    end
+end
